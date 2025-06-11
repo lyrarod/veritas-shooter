@@ -5,12 +5,13 @@ export class Shot {
   width: number;
   height: number;
   speed: number;
-  c: any;
   shots: Shot[];
   direction: { x: number; y: number };
   position: { x: number; y: number };
   game: Game;
   hero: Hero;
+  canvas: HTMLCanvasElement;
+  c: CanvasRenderingContext2D | null;
 
   constructor(
     game: Game,
@@ -18,10 +19,11 @@ export class Shot {
     direction: { x: number; y: number } = { x: 0, y: 0 }
   ) {
     this.game = game;
-    this.c = game.c;
+    this.canvas = game.canvas;
+    this.c = game.canvas.getContext("2d");
+    this.hero = game.hero;
     this.position = position;
     this.direction = direction;
-    this.hero = game.hero;
 
     this.width = this.hero.direction.left || this.hero.direction.right ? 10 : 2;
     this.height = this.hero.direction.up || this.hero.direction.down ? 10 : 2;
@@ -68,6 +70,8 @@ export class Shot {
   }
 
   draw() {
+    if (!this.c) return;
+
     this.c.fillStyle = "cyan";
     this.c.fillRect(this.position.x, this.position.y, this.width, this.height);
   }
@@ -82,9 +86,9 @@ export class Shot {
     this.shots = this.shots.filter((shot) => {
       if (
         shot.position.x < -shot.width ||
-        shot.position.x > this.hero.canvas.width ||
+        shot.position.x > this.canvas.width ||
         shot.position.y < -shot.height ||
-        shot.position.y > this.hero.canvas.height
+        shot.position.y > this.canvas.height
       ) {
         return false;
       }
