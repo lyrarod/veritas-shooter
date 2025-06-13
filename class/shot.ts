@@ -71,7 +71,6 @@ export class Shot {
 
   draw() {
     if (!this.c) return;
-
     this.c.fillStyle = "cyan";
     this.c.fillRect(this.position.x, this.position.y, this.width, this.height);
   }

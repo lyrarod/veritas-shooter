@@ -1,17 +1,20 @@
+import { Boss, Boss2 } from "./boss";
 import { Hero } from "./hero";
-import { Keyboard } from "./keyboard";
 import { Shot } from "./shot";
+import { Keyboard } from "./keyboard";
 
 export class Game {
   canvas: HTMLCanvasElement;
   c: CanvasRenderingContext2D | null;
   hero: Hero;
+  boss: Boss;
+  boss2: Boss2;
   shot: Shot;
   keyboard: Keyboard;
   assets: HTMLImageElement[];
   loadedImages: number;
   assetsLoaded: boolean;
-  gameObjects: (Hero | Shot)[];
+  gameObjects: (Hero | Boss | Shot)[];
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -20,19 +23,21 @@ export class Game {
     this.keyboard = new Keyboard(this);
 
     this.hero = new Hero(this);
+    this.boss = new Boss(this);
+    this.boss2 = new Boss2(this);
     this.shot = new Shot(this);
 
-    this.gameObjects = [this.hero, this.shot];
+    this.gameObjects = [this.hero, this.boss, this.boss2, this.shot];
 
     this.loadedImages = 0;
     this.assetsLoaded = false;
 
-    this.assets = [...this.hero.assets];
+    this.assets = [...this.hero.assets, this.boss.image, this.boss2.image];
 
     this.assets.map((asset, i) => {
       asset.onload = async () => {
         this.loadedImages++;
-        // console.log(`Asset ${i} loaded: `, asset);
+        console.log(`Asset ${i} loaded: `, asset);
 
         if (this.loadedImages === this.assets.length) {
           let loader = document.getElementById("canvasLoader");
@@ -49,8 +54,10 @@ export class Game {
   }
 
   lastTime = 0;
+  debug = false;
 
   update(deltaTime: number) {
+    if (!this.assetsLoaded) return;
     this.gameObjects.forEach((gameObject) => gameObject.update(deltaTime));
   }
 

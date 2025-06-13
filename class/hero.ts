@@ -91,9 +91,9 @@ export class Hero {
     this.game.shot.addShot();
   }
 
-  drawSpriteDirection() {
+  drawSpriteShooterDirection() {
     let { c } = this;
-    if (!c || !this.game.assetsLoaded || !this.isShooting) return;
+    if (!c || !this.isShooting) return;
 
     this.sprite_shoot.x = this.sprite.x;
     this.sprite_shoot.y = this.sprite.y;
@@ -138,11 +138,11 @@ export class Hero {
 
   draw() {
     let { c } = this;
-    if (!c || !this.game.assetsLoaded) return;
+    if (!c) return;
 
-    this.drawSpriteDirection();
+    this.drawSpriteShooterDirection();
 
-    if (this.game.keyboard.keyPressed.KeyR) {
+    if (this.game.debug) {
       c.strokeStyle = "silver";
       c.strokeRect(
         this.sprite.x,

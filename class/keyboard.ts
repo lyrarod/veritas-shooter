@@ -120,8 +120,16 @@ export class Keyboard {
     this.keyPressed[code] = true;
     // console.log(this.keyPressed);
 
-    if (this.isMovingLeft) {
+    if (
+      this.isMovingLeft ||
+      this.isMovingRight ||
+      this.isMovingUp ||
+      this.isMovingDown
+    ) {
       this.game.hero.isShooting = false;
+    }
+
+    if (this.isMovingLeft) {
       this.game.hero.direction = {
         left: true,
         right: false,
@@ -131,7 +139,6 @@ export class Keyboard {
     }
 
     if (this.isMovingRight) {
-      this.game.hero.isShooting = false;
       this.game.hero.direction = {
         left: false,
         right: true,
@@ -141,7 +148,6 @@ export class Keyboard {
     }
 
     if (this.isMovingUp) {
-      this.game.hero.isShooting = false;
       this.game.hero.direction = {
         left: false,
         right: false,
@@ -151,7 +157,6 @@ export class Keyboard {
     }
 
     if (this.isMovingDown) {
-      this.game.hero.isShooting = false;
       this.game.hero.direction = {
         left: false,
         right: false,
@@ -167,6 +172,10 @@ export class Keyboard {
         this.lastKey === "NumpadEnter")
     ) {
       this.game.hero.shooter();
+    }
+
+    if (this.keyPressed.KeyR) {
+      this.game.debug = !this.game.debug;
     }
   }
 
