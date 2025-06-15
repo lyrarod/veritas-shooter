@@ -2,16 +2,18 @@ import { Game } from "./game";
 import { Hero } from "./hero";
 
 export class Shot {
-  width: number;
-  height: number;
-  speed: number;
-  shots: Shot[];
-  direction: { x: number; y: number };
-  position: { x: number; y: number };
   game: Game;
   hero: Hero;
+  width: number;
+  height: number;
+  x: number;
+  y: number;
+  direction: { x: number; y: number };
+  speed: number;
+  shots: Shot[];
   canvas: HTMLCanvasElement;
   c: CanvasRenderingContext2D | null;
+  isRemoved: boolean;
 
   constructor(
     game: Game,
@@ -19,16 +21,18 @@ export class Shot {
     direction: { x: number; y: number } = { x: 0, y: 0 }
   ) {
     this.game = game;
+    this.hero = game.hero;
     this.canvas = game.canvas;
     this.c = game.canvas.getContext("2d");
-    this.hero = game.hero;
-    this.position = position;
-    this.direction = direction;
 
     this.width = this.hero.direction.left || this.hero.direction.right ? 10 : 2;
     this.height = this.hero.direction.up || this.hero.direction.down ? 10 : 2;
+    this.x = position.x;
+    this.y = position.y;
+    this.direction = direction;
     this.speed = 10;
     this.shots = [] as Shot[];
+    this.isRemoved = false;
   }
 
   addShot() {
@@ -72,28 +76,33 @@ export class Shot {
   draw() {
     if (!this.c) return;
     this.c.fillStyle = "cyan";
-    this.c.fillRect(this.position.x, this.position.y, this.width, this.height);
+    this.c.fillRect(this.x, this.y, this.width, this.height);
   }
 
   update(deltaTime: number) {
-    this.shots.forEach((shot) => {
+    this.shots.forEach((shot, sid) => {
       shot.draw();
-      shot.position.x += shot.speed * shot.direction.x;
-      shot.position.y += shot.speed * shot.direction.y;
-    });
+      shot.x += shot.speed * shot.direction.x;
+      shot.y += shot.speed * shot.direction.y;
 
-    this.shots = this.shots.filter((shot) => {
+      this.game.bosses.forEach((boss, bid) => {
+        if (this.game.collisionDetection(boss.hitbox, shot)) {
+          boss.takeDamage(bid);
+          shot.isRemoved = true;
+        }
+      });
+
       if (
-        shot.position.x < -shot.width ||
-        shot.position.x > this.canvas.width ||
-        shot.position.y < -shot.height ||
-        shot.position.y > this.canvas.height
+        shot.isRemoved ||
+        shot.x < -shot.width ||
+        shot.x > this.canvas.width ||
+        shot.y < -shot.height ||
+        shot.y > this.canvas.height
       ) {
-        return false;
+        this.shots.splice(sid, 1);
       }
-      return true;
-    });
 
-    // console.log(this.shots);
+      // console.log(this.shots);
+    });
   }
 }

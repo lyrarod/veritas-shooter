@@ -12,6 +12,8 @@ export class Boss {
   frametimer: number;
   frameinterval: number;
   image: HTMLImageElement;
+  health: number;
+  speed: number;
 
   constructor(game: Game) {
     this.game = game;
@@ -26,6 +28,44 @@ export class Boss {
     this.frameinterval = 1000 / 60;
     this.image = new Image();
     this.image.src = "/space_whales.png";
+    this.health = 0;
+    this.speed = 0.1 + Math.random() * 0.25;
+  }
+
+  hitbox = {
+    width: 0,
+    height: 0,
+    x: 0,
+    y: 0,
+  };
+
+  takeDamage(index: number) {
+    if (this.health < 1 || this.y < 0) return;
+    this.health--;
+    // console.log(this.health);
+    this.y -= this.height * 0.05;
+
+    if (this.health === 0) {
+      this.game.bosses.splice(index, 1);
+    }
+  }
+
+  drawHitbox() {
+    let { c, debug } = this.game;
+    if (!c) return;
+
+    this.hitbox.x = this.x + this.width * 0.5 - this.hitbox.width * 0.5;
+    this.hitbox.y = this.y + this.height * 0.5 - this.hitbox.height * 0.2;
+
+    if (debug) {
+      c.strokeStyle = "red";
+      c.strokeRect(
+        this.hitbox.x,
+        this.hitbox.y,
+        this.hitbox.width,
+        this.hitbox.height
+      );
+    }
   }
 
   draw() {
@@ -51,14 +91,30 @@ export class Boss {
   }
 
   update(deltaTime: number) {
-    this.draw();
+    // if (this.bosses.length < 1) {
+    //   this.bosses.push(new Boss(this.game));
+    // }
 
-    if (this.frametimer > this.frameinterval) {
-      this.ifx < this.frameX.length - 1 ? this.ifx++ : (this.ifx = 0);
-      this.frametimer = 0;
-    } else {
-      this.frametimer += deltaTime;
-    }
+    this.game.bosses.forEach((boss, index) => {
+      boss.draw();
+      boss.drawHitbox();
+      boss.y += boss.speed;
+
+      if (boss.frametimer > boss.frameinterval) {
+        boss.ifx < boss.frameX.length - 1 ? boss.ifx++ : (boss.ifx = 0);
+        boss.frametimer = 0;
+      } else {
+        boss.frametimer += deltaTime;
+      }
+
+      if (boss.y > this.game.canvas.height) {
+        // this.game.bosses.splice(index, 1);
+        boss.speed += 0.01;
+        boss.y = -boss.height;
+        boss.x = Math.random() * (this.game.canvas.width - boss.width);
+      }
+      // console.log(this.game.bosses);
+    });
   }
 }
 
@@ -67,39 +123,59 @@ export class Boss2 extends Boss {
     super(game);
     this.width = 512 / 8;
     this.height = 272 / 4;
-    this.x = game.canvas.width * 0.5 - this.width * 0.5;
-    this.y = 0;
+    // this.x = game.canvas.width * 0.5 - this.width * 0.5;
+    this.x = Math.random() * (game.canvas.width - this.width);
+    this.y = -this.height;
     this.frameX = Array.from({ length: 4 }, (_, i) => i);
     this.ifx = 0;
     this.frameY = 0;
     this.image.src = "/boss2.png";
+    this.health = 5;
   }
 
   hitbox = {
-    w: 20,
-    h: 20,
+    width: 20,
+    height: 10,
     x: 0,
     y: 0,
   };
+
+  takeDamage(index: number) {
+    super.takeDamage(index);
+  }
 
   drawHitbox() {
     let { c, debug } = this.game;
     if (!c) return;
 
+    this.hitbox.x = this.x + this.width * 0.5 - this.hitbox.width * 0.5;
+    this.hitbox.y = this.y + this.height * 0.5 - this.hitbox.height * 0.5 + 8;
+
     if (debug) {
       c.strokeStyle = "cyan";
-      c.strokeRect(this.hitbox.x, this.hitbox.y, this.hitbox.w, this.hitbox.h);
+      c.strokeRect(
+        this.hitbox.x,
+        this.hitbox.y,
+        this.hitbox.width,
+        this.hitbox.height
+      );
     }
-    this.hitbox.x = this.x + this.width * 0.5 - this.hitbox.w * 0.5;
-    this.hitbox.y = this.y + this.height * 0.5 - this.hitbox.h * 0.2;
   }
 
   draw(): void {
     super.draw();
-    this.drawHitbox();
   }
 
   update(deltaTime: number): void {
     super.update(deltaTime);
+
+    if (this.game.bosses.length < 10) {
+      this.frametimer++;
+      // console.log(this.frametimer);
+
+      if (this.frametimer % 160 === 0) {
+        this.game.bosses.push(new Boss2(this.game));
+      }
+    }
   }
 }
