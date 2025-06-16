@@ -1,6 +1,7 @@
-import { Boss, Boss2 } from "./boss";
+import { Boss } from "./boss";
 import { Hero } from "./hero";
 import { Shot } from "./shot";
+import { Enemy } from "./enemy";
 import { Keyboard } from "./keyboard";
 
 export class Game {
@@ -8,14 +9,15 @@ export class Game {
   c: CanvasRenderingContext2D | null;
   hero: Hero;
   boss: Boss;
-  boss2: Boss2;
   shot: Shot;
+  enemy: Enemy;
   keyboard: Keyboard;
   assets: HTMLImageElement[];
   loadedImages: number;
   assetsLoaded: boolean;
-  gameObjects: (Hero | Boss | Shot)[];
+  gameObjects: (Hero | Boss | Shot | Enemy)[];
   bosses: Boss[];
+  enemies: Enemy[];
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -25,13 +27,14 @@ export class Game {
 
     this.hero = new Hero(this);
     this.boss = new Boss(this);
-    this.boss2 = new Boss2(this);
+    this.enemy = new Enemy(this);
     this.shot = new Shot(this);
 
-    this.gameObjects = [this.hero, this.boss, this.boss2, this.shot];
+    this.gameObjects = [this.hero, this.shot, this.enemy, this.boss];
 
     this.bosses = [];
     this.boss.spawn();
+    this.enemies = [];
 
     this.loadedImages = 0;
     this.assetsLoaded = false;
@@ -39,7 +42,7 @@ export class Game {
     this.assets = [
       ...this.hero.assets,
       this.boss.image,
-      this.boss2.image,
+      this.enemy.image,
       this.shot.sprite,
     ];
 

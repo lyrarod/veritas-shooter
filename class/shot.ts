@@ -126,6 +126,13 @@ export class Shot {
         shot.frameTimer += deltaTime;
       }
 
+      this.game.enemies.forEach((enemy, eid) => {
+        if (this.game.collisionDetection(enemy.hitbox, shot)) {
+          enemy.takeDamage(eid);
+          shot.isRemoved = true;
+        }
+      });
+
       this.game.bosses.forEach((boss, bid) => {
         if (this.game.collisionDetection(boss.hitbox, shot)) {
           boss.takeDamage(bid);

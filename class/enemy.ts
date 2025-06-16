@@ -1,6 +1,6 @@
-import { Game } from "@/class/game";
+import { Game } from "./game";
 
-export class Boss {
+export class Enemy {
   game: Game;
   width: number;
   height: number;
@@ -9,50 +9,34 @@ export class Boss {
   frameX: number[];
   ifx: number;
   frameY: number;
+  speed: number;
+  health: number;
   frametimer: number;
   frameinterval: number;
   image: HTMLImageElement;
-  health: number;
-  speed: number;
-
   constructor(game: Game) {
     this.game = game;
-    this.width = 1260 / 7;
-    this.height = 262 / 2;
+    this.width = 512 / 8;
+    this.height = 272 / 4;
     this.x = Math.random() * (game.canvas.width - this.width);
     this.y = -this.height;
-    this.frameX = Array.from({ length: 7 }, (_, i) => i);
+    this.frameX = Array.from({ length: 4 }, (_, i) => i);
     this.ifx = 0;
     this.frameY = 0;
     this.frametimer = 0;
     this.frameinterval = 1000 / 30;
-    this.speed = 0;
-    this.health = 10;
+    this.speed = 0.1 + Math.random() * 0.25;
+    this.health = 3;
     this.image = new Image();
-    this.image.src = "/metroid.png";
+    this.image.src = "/enemy.png";
   }
 
   hitbox = {
-    width: 40,
-    height: 20,
+    width: 20,
+    height: 10,
     x: 0,
     y: 0,
   };
-
-  initPosition() {
-    if (this.y < 0) {
-      this.y += 0.5;
-    }
-  }
-
-  spawn() {
-    if (this.game.bosses.length < 1) {
-      this.frametimer++;
-      if (this.frametimer % 1000 === 0) {
-        this.game.bosses.push(new Boss(this.game));
-      }
-    }
-  }
 
   takeDamage(index: number) {
     if (this.health < 1 || this.y < 0) return;
@@ -61,7 +45,7 @@ export class Boss {
     this.y -= this.height * 0.05;
 
     if (this.health === 0) {
-      this.game.bosses.splice(index, 1);
+      this.game.enemies.splice(index, 1);
     }
   }
 
@@ -70,10 +54,10 @@ export class Boss {
     if (!c) return;
 
     this.hitbox.x = this.x + this.width * 0.5 - this.hitbox.width * 0.5;
-    this.hitbox.y = this.y + this.height * 0.5 - this.hitbox.height * 0.5;
+    this.hitbox.y = this.y + this.height * 0.5 - this.hitbox.height * 0.5 + 8;
 
     if (debug) {
-      c.strokeStyle = "red";
+      c.strokeStyle = "cyan";
       c.strokeRect(
         this.hitbox.x,
         this.hitbox.y,
@@ -105,27 +89,31 @@ export class Boss {
     }
   }
 
-  update(deltaTime: number) {
-    this.spawn();
+  update(deltaTime: number): void {
+    if (this.game.enemies.length < 10) {
+      this.frametimer++;
+      if (this.frametimer % 120 === 0) {
+        this.game.enemies.push(new Enemy(this.game));
+      }
+    }
 
-    this.game.bosses.forEach((boss) => {
-      boss.draw();
-      boss.drawHitbox();
-      boss.initPosition();
-      boss.y += boss.speed;
+    this.game.enemies.forEach((enemy) => {
+      enemy.draw();
+      enemy.drawHitbox();
+      enemy.y += enemy.speed;
 
-      if (boss.frametimer > boss.frameinterval) {
-        boss.ifx < boss.frameX.length - 1 ? boss.ifx++ : (boss.ifx = 0);
-        boss.frametimer = 0;
+      if (enemy.frametimer > enemy.frameinterval) {
+        enemy.ifx < enemy.frameX.length - 1 ? enemy.ifx++ : (enemy.ifx = 0);
+        enemy.frametimer = 0;
       } else {
-        boss.frametimer += deltaTime;
+        enemy.frametimer += deltaTime;
       }
 
-      if (boss.y > this.game.canvas.height) {
-        // this.game.bosses.splice(index, 1);
-        boss.speed += 0.01;
-        boss.y = -boss.height;
-        boss.x = Math.random() * (this.game.canvas.width - boss.width);
+      if (enemy.y > this.game.canvas.height) {
+        // this.game.enemyes.splice(index, 1);
+        enemy.speed += 0.01;
+        enemy.y = -enemy.height;
+        enemy.x = Math.random() * (this.game.canvas.width - enemy.width);
       }
       // console.log(this.game.bosses);
     });
