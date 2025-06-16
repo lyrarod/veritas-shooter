@@ -23,7 +23,7 @@ export default function Home() {
           width={500}
           height={600}
           className="w-full max-w-full bg-card"
-          // style={{ imageRendering: "pixelated" }}
+          style={{ imageRendering: "pixelated" }}
         />
 
         <div

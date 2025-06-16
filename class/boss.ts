@@ -26,10 +26,10 @@ export class Boss {
     this.frameY = 3;
     this.frametimer = 0;
     this.frameinterval = 1000 / 60;
+    this.speed = 0;
+    this.health = 5;
     this.image = new Image();
     this.image.src = "/space_whales.png";
-    this.health = 0;
-    this.speed = 0.1 + Math.random() * 0.25;
   }
 
   hitbox = {
@@ -39,11 +39,15 @@ export class Boss {
     y: 0,
   };
 
+  spawn() {
+    this.game.bosses.push(new Boss(this.game));
+  }
+
   takeDamage(index: number) {
     if (this.health < 1 || this.y < 0) return;
     this.health--;
     // console.log(this.health);
-    this.y -= this.height * 0.05;
+    // this.y -= this.height * 0.05;
 
     if (this.health === 0) {
       this.game.bosses.splice(index, 1);
@@ -54,8 +58,10 @@ export class Boss {
     let { c, debug } = this.game;
     if (!c) return;
 
+    this.hitbox.width = this.width * 0.7;
+    this.hitbox.height = this.height * 0.5;
     this.hitbox.x = this.x + this.width * 0.5 - this.hitbox.width * 0.5;
-    this.hitbox.y = this.y + this.height * 0.5 - this.hitbox.height * 0.2;
+    this.hitbox.y = this.y + this.height * 0.5 - this.hitbox.height * 0.5;
 
     if (debug) {
       c.strokeStyle = "red";
@@ -91,10 +97,6 @@ export class Boss {
   }
 
   update(deltaTime: number) {
-    // if (this.bosses.length < 1) {
-    //   this.bosses.push(new Boss(this.game));
-    // }
-
     this.game.bosses.forEach((boss, index) => {
       boss.draw();
       boss.drawHitbox();
@@ -123,14 +125,14 @@ export class Boss2 extends Boss {
     super(game);
     this.width = 512 / 8;
     this.height = 272 / 4;
-    // this.x = game.canvas.width * 0.5 - this.width * 0.5;
     this.x = Math.random() * (game.canvas.width - this.width);
     this.y = -this.height;
     this.frameX = Array.from({ length: 4 }, (_, i) => i);
     this.ifx = 0;
     this.frameY = 0;
+    this.speed = 0.1 + Math.random() * 0.25;
+    this.health = 3;
     this.image.src = "/boss2.png";
-    this.health = 5;
   }
 
   hitbox = {
@@ -142,6 +144,7 @@ export class Boss2 extends Boss {
 
   takeDamage(index: number) {
     super.takeDamage(index);
+    this.y -= this.height * 0.05;
   }
 
   drawHitbox() {

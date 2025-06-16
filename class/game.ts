@@ -28,19 +28,20 @@ export class Game {
     this.boss2 = new Boss2(this);
     this.shot = new Shot(this);
 
-    this.gameObjects = [
-      this.hero,
-      // this.boss,
-      this.boss2,
-      this.shot,
-    ];
+    this.gameObjects = [this.hero, this.boss, this.boss2, this.shot];
 
     this.bosses = [];
+    this.boss.spawn();
 
     this.loadedImages = 0;
     this.assetsLoaded = false;
 
-    this.assets = [...this.hero.assets, this.boss.image, this.boss2.image];
+    this.assets = [
+      ...this.hero.assets,
+      this.boss.image,
+      this.boss2.image,
+      this.shot.sprite,
+    ];
 
     this.assets.map((asset, i) => {
       asset.onload = async () => {

@@ -14,6 +14,14 @@ export class Shot {
   canvas: HTMLCanvasElement;
   c: CanvasRenderingContext2D | null;
   isRemoved: boolean;
+  sprite: HTMLImageElement;
+  frameX: number[];
+  ifx: number;
+  frameY: number;
+  frameTimer: number;
+  frameInterval: number;
+  initFrame: number;
+  lastFrame: number;
 
   constructor(
     game: Game,
@@ -25,14 +33,23 @@ export class Shot {
     this.canvas = game.canvas;
     this.c = game.canvas.getContext("2d");
 
-    this.width = this.hero.direction.left || this.hero.direction.right ? 10 : 2;
-    this.height = this.hero.direction.up || this.hero.direction.down ? 10 : 2;
+    this.width = 576 / 24;
+    this.height = 360 / 15;
     this.x = position.x;
     this.y = position.y;
     this.direction = direction;
-    this.speed = 10;
-    this.shots = [] as Shot[];
+    this.speed = 3;
+    this.initFrame = 8;
+    this.lastFrame = 16;
+    this.ifx = this.initFrame;
+    this.frameX = Array.from({ length: this.lastFrame }, (_, i) => i);
+    this.frameY = 0;
+    this.frameTimer = 0;
+    this.frameInterval = 1000 / 30;
     this.isRemoved = false;
+    this.shots = [] as Shot[];
+    this.sprite = new Image();
+    this.sprite.src = "/bullet_10B.png";
   }
 
   addShot() {
@@ -42,32 +59,32 @@ export class Shot {
     if (this.hero.direction.left) {
       direction = { x: -1, y: 0 };
       position = {
-        x: this.hero.sprite.x - 7,
-        y: this.hero.sprite.y + 65,
+        x: this.hero.sprite.x - 20,
+        y: this.hero.sprite.y + 54,
       };
     }
 
     if (this.hero.direction.right) {
       direction = { x: 1, y: 0 };
       position = {
-        x: this.hero.sprite.x + this.hero.sprite.width - 3,
-        y: this.hero.sprite.y + 65,
+        x: this.hero.sprite.x + this.hero.sprite.width - 4,
+        y: this.hero.sprite.y + 54,
       };
     }
 
     if (this.hero.direction.up) {
       direction = { x: 0, y: -1 };
       position = {
-        x: this.hero.sprite.x + this.hero.sprite.width - 19,
-        y: this.hero.sprite.y + 36,
+        x: this.hero.sprite.x + this.hero.sprite.width * 0.5,
+        y: this.hero.sprite.y + 20,
       };
     }
 
     if (this.hero.direction.down) {
       direction = { x: 0, y: 1 };
       position = {
-        x: this.hero.sprite.x + 18,
-        y: this.hero.sprite.y + 71,
+        x: this.hero.sprite.x + 6,
+        y: this.hero.sprite.y + 70,
       };
     }
     this.shots.push(new Shot(this.game, position, direction));
@@ -75,8 +92,23 @@ export class Shot {
 
   draw() {
     if (!this.c) return;
-    this.c.fillStyle = "cyan";
-    this.c.fillRect(this.x, this.y, this.width, this.height);
+
+    this.c.drawImage(
+      this.sprite,
+      this.frameX[this.ifx] * this.width,
+      this.frameY * this.height,
+      this.width,
+      this.height,
+      this.x,
+      this.y,
+      this.width,
+      this.height
+    );
+
+    if (this.game.debug) {
+      this.c.strokeStyle = "silver";
+      this.c.strokeRect(this.x, this.y, this.width, this.height);
+    }
   }
 
   update(deltaTime: number) {
@@ -84,6 +116,15 @@ export class Shot {
       shot.draw();
       shot.x += shot.speed * shot.direction.x;
       shot.y += shot.speed * shot.direction.y;
+
+      if (shot.frameTimer > shot.frameInterval) {
+        shot.ifx < shot.frameX.length - 1
+          ? shot.ifx++
+          : (shot.ifx = shot.initFrame);
+        shot.frameTimer = 0;
+      } else {
+        shot.frameTimer += deltaTime;
+      }
 
       this.game.bosses.forEach((boss, bid) => {
         if (this.game.collisionDetection(boss.hitbox, shot)) {
