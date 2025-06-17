@@ -9,7 +9,7 @@ export class Hero {
     x: number;
     y: number;
     frameX: number[];
-    indexFrameX: number;
+    ifx: number;
     frameY: number;
     frameTimer: number;
     frameInterval: number;
@@ -20,13 +20,22 @@ export class Hero {
   assets: HTMLImageElement[];
   sprite_shoot: {} | any;
   direction: { left: boolean; right: boolean; up: boolean; down: boolean };
-  isShooting: boolean;
   game: Game;
+  RIGHT: number;
+  LEFT: number;
+  UP: number;
+  DOWN: number;
+  shotAudio: HTMLAudioElement;
 
   constructor(game: Game) {
     this.game = game;
     this.canvas = game.canvas;
     this.c = game.canvas.getContext("2d");
+
+    this.RIGHT = 3;
+    this.LEFT = 2;
+    this.UP = 1;
+    this.DOWN = 0;
 
     this.sprite = {
       width: 232 / 4,
@@ -35,8 +44,8 @@ export class Hero {
       y: 0,
       speed: 2,
       frameX: Array.from({ length: 4 }, (_, i) => i),
-      indexFrameX: 0,
-      frameY: 0,
+      ifx: 0,
+      frameY: this.UP,
       frameTimer: 0,
       frameInterval: 1000 / 6,
       image: new Image(),
@@ -61,33 +70,45 @@ export class Hero {
     this.sprite_shoot.image["up"].src = "/up.png";
     this.sprite_shoot.image["down"].src = "/down.png";
 
+    this.direction = {
+      left: false,
+      right: false,
+      up: true,
+      down: false,
+    };
+
+    this.shotAudio = new Audio("/WHOOSH_AIRY_FLUTTER_01.wav");
+
     this.assets = [
       this.sprite.image,
       this.sprite_shoot.image.left,
       this.sprite_shoot.image.right,
       this.sprite_shoot.image.up,
       this.sprite_shoot.image.down,
+      this.shotAudio,
     ];
 
-    this.direction = {
-      left: false,
-      right: false,
-      up: false,
-      down: true,
-    };
-
-    this.isShooting = false;
-
-    this.center();
+    this.startPosition();
   }
 
-  RIGHT = 3;
-  LEFT = 2;
-  UP = 1;
-  DOWN = 0;
+  canShot = false;
+  isShooting = false;
+
+  playShotAudio() {
+    this.shotAudio.currentTime = 0;
+    this.shotAudio.play();
+  }
 
   shooter() {
+    if (!this.canShot) return;
+    this.playShotAudio();
     this.isShooting = true;
+    this.game.hero.direction = {
+      left: false,
+      right: false,
+      up: true,
+      down: false,
+    };
     this.game.shot.addShot();
   }
 
@@ -156,7 +177,7 @@ export class Hero {
 
     c.drawImage(
       this.sprite.image,
-      this.sprite.frameX[this.sprite.indexFrameX] * this.sprite.width,
+      this.sprite.frameX[this.sprite.ifx] * this.sprite.width,
       this.sprite.frameY * this.sprite.height,
       this.sprite.width,
       this.sprite.height,
@@ -170,9 +191,22 @@ export class Hero {
   update(deltaTime: number) {
     this.draw();
 
+    this.canShot = true;
     this.sprite.isMoving = false;
 
+    if (this.sprite.y + this.sprite.height > this.canvas.height) {
+      this.sprite.y -= 1;
+      this.canShot = false;
+      this.sprite.isMoving = true;
+      this.game.keyboard.keyPressed.KeyA = false;
+      this.game.keyboard.keyPressed.KeyD = false;
+      this.game.keyboard.keyPressed.ArrowLeft = false;
+      this.game.keyboard.keyPressed.ArrowRight = false;
+    }
+
     if (this.isShooting === false) {
+      this.sprite.frameY = this.UP;
+
       if (this.game.keyboard.isMovingRight) {
         this.sprite.frameY = this.RIGHT;
         if (this.sprite.x + this.sprite.width < this.canvas.width) {
@@ -189,30 +223,28 @@ export class Hero {
         }
       }
 
-      if (this.game.keyboard.isMovingUp) {
-        this.sprite.frameY = this.UP;
-        if (this.sprite.y > -this.sprite.height * 0.3) {
-          this.sprite.isMoving = true;
-          this.sprite.y -= this.sprite.speed;
-        }
-      }
+      // if (this.game.keyboard.isMovingUp) {
+      //   this.sprite.frameY = this.UP;
+      //   if (this.sprite.y > -this.sprite.height * 0.3) {
+      //     this.sprite.isMoving = true;
+      //     this.sprite.y -= this.sprite.speed;
+      //   }
+      // }
 
-      if (this.game.keyboard.isMovingDown) {
-        this.sprite.frameY = this.DOWN;
-        if (this.sprite.y + this.sprite.height * 0.94 < this.canvas.height) {
-          this.sprite.isMoving = true;
-          this.sprite.y += this.sprite.speed;
-        }
-      }
+      // if (this.game.keyboard.isMovingDown) {
+      //   this.sprite.frameY = this.DOWN;
+      //   if (this.sprite.y + this.sprite.height < this.canvas.height) {
+      //     this.sprite.isMoving = true;
+      //     this.sprite.y += this.sprite.speed;
+      //   }
+      // }
     }
 
     if (this.sprite.frameTimer > this.sprite.frameInterval) {
-      this.sprite.isMoving === true
-        ? this.sprite.indexFrameX++
-        : (this.sprite.indexFrameX = 0);
+      this.sprite.isMoving === true ? this.sprite.ifx++ : (this.sprite.ifx = 0);
 
-      if (this.sprite.indexFrameX >= this.sprite.frameX.length) {
-        this.sprite.indexFrameX = 0;
+      if (this.sprite.ifx >= this.sprite.frameX.length) {
+        this.sprite.ifx = 0;
       }
       this.sprite.frameTimer = 0;
     } else {
@@ -220,8 +252,8 @@ export class Hero {
     }
   }
 
-  center() {
+  startPosition() {
+    this.sprite.y = this.canvas.height;
     this.sprite.x = this.canvas.width * 0.5 - this.sprite.width * 0.5;
-    this.sprite.y = this.canvas.height * 0.5 - this.sprite.height * 0.5;
   }
 }

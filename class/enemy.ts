@@ -1,3 +1,4 @@
+import { spawn } from "child_process";
 import { Game } from "./game";
 
 export class Enemy {
@@ -25,7 +26,7 @@ export class Enemy {
     this.frameY = 0;
     this.frametimer = 0;
     this.frameinterval = 1000 / 30;
-    this.speed = 0.1 + Math.random() * 0.25;
+    this.speed = 0.25 + Math.random() * 0.25;
     this.health = 3;
     this.image = new Image();
     this.image.src = "/enemy.png";
@@ -38,6 +39,15 @@ export class Enemy {
     y: 0,
   };
 
+  async spawnEnemies() {
+    const qty = this.game.waves[this.game.windex].enemy.qty;
+    await new Promise((resolve) => setTimeout(resolve, 4000));
+    for (let i = 0; i < qty; i++) {
+      this.game.enemies.push(new Enemy(this.game));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+  }
+
   takeDamage(index: number) {
     if (this.health < 1 || this.y < 0) return;
     this.health--;
@@ -47,6 +57,13 @@ export class Enemy {
     if (this.health === 0) {
       this.game.enemies.splice(index, 1);
     }
+    console.log(this.game.enemies);
+
+    if (this.game.enemies.length < 1) {
+      this.game.waves[this.game.windex].enemy.isComplete = true;
+      this.game.boss.spawnBoss();
+    }
+    console.log(this.game.waves[this.game.windex].enemy.isComplete);
   }
 
   drawHitbox() {
@@ -90,13 +107,6 @@ export class Enemy {
   }
 
   update(deltaTime: number): void {
-    if (this.game.enemies.length < 10) {
-      this.frametimer++;
-      if (this.frametimer % 120 === 0) {
-        this.game.enemies.push(new Enemy(this.game));
-      }
-    }
-
     this.game.enemies.forEach((enemy) => {
       enemy.draw();
       enemy.drawHitbox();
@@ -115,7 +125,7 @@ export class Enemy {
         enemy.y = -enemy.height;
         enemy.x = Math.random() * (this.game.canvas.width - enemy.width);
       }
-      // console.log(this.game.bosses);
+      // console.log(this.game.enemies);
     });
   }
 }

@@ -12,31 +12,50 @@ export class Game {
   shot: Shot;
   enemy: Enemy;
   keyboard: Keyboard;
-  assets: HTMLImageElement[];
-  loadedImages: number;
+  assets: (HTMLImageElement | HTMLAudioElement)[];
+  count: number;
   assetsLoaded: boolean;
   gameObjects: (Hero | Boss | Shot | Enemy)[];
   bosses: Boss[];
   enemies: Enemy[];
+  windex: number;
+  waves: {
+    enemy: { qty: number; isComplete: boolean };
+    boss: { qty: number; isComplete: boolean };
+    isComplete: boolean;
+  }[];
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.c = canvas.getContext("2d");
 
     this.keyboard = new Keyboard(this);
+    this.windex = 0;
+    this.waves = [
+      {
+        enemy: {
+          qty: 10,
+          isComplete: false,
+        },
+        boss: {
+          qty: 1,
+          isComplete: false,
+        },
+        isComplete: false,
+      },
+    ];
+
+    this.bosses = [];
+    this.enemies = [];
 
     this.hero = new Hero(this);
     this.boss = new Boss(this);
     this.enemy = new Enemy(this);
     this.shot = new Shot(this);
 
-    this.gameObjects = [this.hero, this.shot, this.enemy, this.boss];
+    this.gameObjects = [this.shot, this.hero, this.enemy, this.boss];
 
-    this.bosses = [];
-    this.boss.spawn();
-    this.enemies = [];
-
-    this.loadedImages = 0;
+    this.count = 0;
     this.assetsLoaded = false;
 
     this.assets = [
@@ -44,14 +63,20 @@ export class Game {
       this.boss.image,
       this.enemy.image,
       this.shot.sprite,
+      this.shot.impactAudio,
     ];
 
     this.assets.map((asset, i) => {
       asset.onload = async () => {
-        this.loadedImages++;
+        this.count++;
+        // console.log(`Asset ${i} loaded: `, asset);
+      };
+
+      asset.oncanplay = async () => {
+        this.count++;
         // console.log(`Asset ${i} loaded: `, asset);
 
-        if (this.loadedImages === this.assets.length) {
+        if (this.count === this.assets.length) {
           let loader = document.getElementById("canvasLoader");
           await new Promise((resolve) => setTimeout(resolve, 1000));
           this.assetsLoaded = true;
@@ -96,6 +121,7 @@ export class Game {
   }
 
   start() {
+    this.enemy.spawnEnemies();
     requestAnimationFrame(this.loop);
   }
 }

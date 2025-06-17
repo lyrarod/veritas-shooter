@@ -19,7 +19,7 @@ export class Boss {
     this.game = game;
     this.width = 1260 / 7;
     this.height = 262 / 2;
-    this.x = Math.random() * (game.canvas.width - this.width);
+    this.x = game.canvas.width * 0.5 - this.width * 0.5;
     this.y = -this.height;
     this.frameX = Array.from({ length: 7 }, (_, i) => i);
     this.ifx = 0;
@@ -39,18 +39,18 @@ export class Boss {
     y: 0,
   };
 
-  initPosition() {
-    if (this.y < 0) {
-      this.y += 0.5;
+  async spawnBoss() {
+    const qty = this.game.waves[this.game.windex].boss.qty;
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+    for (let i = 0; i < qty; i++) {
+      this.game.bosses.push(new Boss(this.game));
+      await new Promise((resolve) => setTimeout(resolve, 5000));
     }
   }
 
-  spawn() {
-    if (this.game.bosses.length < 1) {
-      this.frametimer++;
-      if (this.frametimer % 1000 === 0) {
-        this.game.bosses.push(new Boss(this.game));
-      }
+  initPosition() {
+    if (this.y < 0) {
+      this.y += 0.5;
     }
   }
 
@@ -106,8 +106,6 @@ export class Boss {
   }
 
   update(deltaTime: number) {
-    this.spawn();
-
     this.game.bosses.forEach((boss) => {
       boss.draw();
       boss.drawHitbox();
