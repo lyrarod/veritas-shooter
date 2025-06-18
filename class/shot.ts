@@ -22,7 +22,6 @@ export class Shot {
   frameInterval: number;
   initFrame: number;
   lastFrame: number;
-  impactAudio: HTMLAudioElement;
 
   constructor(
     game: Game,
@@ -51,12 +50,6 @@ export class Shot {
     this.shots = [] as Shot[];
     this.sprite = new Image();
     this.sprite.src = "/bullet_10B.png";
-    this.impactAudio = new Audio("/EXPLDsgn_Explosion_Impact_14.wav");
-  }
-
-  playImpactAudio() {
-    this.impactAudio.currentTime = 0;
-    this.impactAudio.play();
   }
 
   addShot() {
@@ -137,7 +130,6 @@ export class Shot {
         if (this.game.collisionDetection(enemy.hitbox, shot)) {
           enemy.takeDamage(eid);
           shot.isRemoved = true;
-          this.playImpactAudio();
         }
       });
 
@@ -145,7 +137,6 @@ export class Shot {
         if (this.game.collisionDetection(boss.hitbox, shot)) {
           boss.takeDamage(bid);
           shot.isRemoved = true;
-          this.playImpactAudio();
         }
       });
 

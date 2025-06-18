@@ -15,6 +15,8 @@ export class Enemy {
   frametimer: number;
   frameinterval: number;
   image: HTMLImageElement;
+  impactAudio: HTMLAudioElement;
+
   constructor(game: Game) {
     this.game = game;
     this.width = 512 / 8;
@@ -26,10 +28,11 @@ export class Enemy {
     this.frameY = 0;
     this.frametimer = 0;
     this.frameinterval = 1000 / 30;
-    this.speed = 0.25 + Math.random() * 0.25;
+    this.speed = 0.3 + Math.random() * 0.3;
     this.health = 3;
     this.image = new Image();
     this.image.src = "/enemy.png";
+    this.impactAudio = new Audio("/EXPLDsgn_Explosion_Impact_14.wav");
   }
 
   hitbox = {
@@ -48,22 +51,28 @@ export class Enemy {
     }
   }
 
+  playImpactAudio() {
+    this.impactAudio.currentTime = 0;
+    this.impactAudio.play();
+  }
+
   takeDamage(index: number) {
     if (this.health < 1 || this.y < 0) return;
     this.health--;
-    // console.log(this.health);
+    this.playImpactAudio();
     this.y -= this.height * 0.05;
 
     if (this.health === 0) {
       this.game.enemies.splice(index, 1);
+      this.game.explosion.show({ x: this.x, y: this.y });
     }
-    console.log(this.game.enemies);
+    // console.log(this.game.enemies);
 
     if (this.game.enemies.length < 1) {
       this.game.waves[this.game.windex].enemy.isComplete = true;
       this.game.boss.spawnBoss();
     }
-    console.log(this.game.waves[this.game.windex].enemy.isComplete);
+    // console.log(this.game.waves[this.game.windex].enemy.isComplete);
   }
 
   drawHitbox() {

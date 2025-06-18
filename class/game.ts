@@ -3,6 +3,7 @@ import { Hero } from "./hero";
 import { Shot } from "./shot";
 import { Enemy } from "./enemy";
 import { Keyboard } from "./keyboard";
+import { Explosion } from "./explosion";
 
 export class Game {
   canvas: HTMLCanvasElement;
@@ -15,7 +16,7 @@ export class Game {
   assets: (HTMLImageElement | HTMLAudioElement)[];
   count: number;
   assetsLoaded: boolean;
-  gameObjects: (Hero | Boss | Shot | Enemy)[];
+  gameObjects: (Hero | Boss | Shot | Enemy | Explosion)[];
   bosses: Boss[];
   enemies: Enemy[];
   windex: number;
@@ -24,6 +25,9 @@ export class Game {
     boss: { qty: number; isComplete: boolean };
     isComplete: boolean;
   }[];
+  ctx: any;
+  explosion: Explosion;
+  ambientAudio: HTMLAudioElement;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -34,7 +38,7 @@ export class Game {
     this.waves = [
       {
         enemy: {
-          qty: 10,
+          qty: 30,
           isComplete: false,
         },
         boss: {
@@ -52,8 +56,18 @@ export class Game {
     this.boss = new Boss(this);
     this.enemy = new Enemy(this);
     this.shot = new Shot(this);
+    this.explosion = new Explosion(this);
 
-    this.gameObjects = [this.shot, this.hero, this.enemy, this.boss];
+    this.gameObjects = [
+      this.shot,
+      this.hero,
+      this.enemy,
+      this.boss,
+      this.explosion,
+    ];
+
+    this.ambientAudio = new Audio("/dark_world.mp3");
+    this.ambientAudio.volume = 1;
 
     this.count = 0;
     this.assetsLoaded = false;
@@ -63,7 +77,9 @@ export class Game {
       this.boss.image,
       this.enemy.image,
       this.shot.sprite,
-      this.shot.impactAudio,
+      this.enemy.impactAudio,
+      ...this.explosion.assets,
+      this.ambientAudio,
     ];
 
     this.assets.map((asset, i) => {
@@ -75,12 +91,13 @@ export class Game {
       asset.oncanplay = async () => {
         this.count++;
         // console.log(`Asset ${i} loaded: `, asset);
-
         if (this.count === this.assets.length) {
-          let loader = document.getElementById("canvasLoader");
+          let play = document.getElementById("play");
+          let loading = document.getElementById("loading");
           await new Promise((resolve) => setTimeout(resolve, 1000));
           this.assetsLoaded = true;
-          loader?.classList.add("hidden");
+          play?.classList.remove("hidden");
+          loading?.classList.add("hidden");
         }
       };
 
@@ -120,7 +137,17 @@ export class Game {
     );
   }
 
+  async playAmbientAudio() {
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+    this.ambientAudio.currentTime = 0;
+    this.ambientAudio.volume = 0.4;
+    this.ambientAudio.play().then(() => {});
+  }
+
   start() {
+    let screen = document.getElementById("screen");
+    screen?.classList.add("hidden");
+    this.playAmbientAudio();
     this.enemy.spawnEnemies();
     requestAnimationFrame(this.loop);
   }
