@@ -15,7 +15,7 @@ export class Explosion {
     isVisible: boolean;
     sound: HTMLAudioElement;
     sprite: HTMLImageElement;
-    playSound: () => void;
+    playExplosionSound: () => void;
   };
   explosions: Explosion[];
   assets: (HTMLAudioElement | HTMLImageElement)[];
@@ -28,17 +28,17 @@ export class Explosion {
       height: 64,
       x: position.x,
       y: position.y,
-      sprite: new Image(),
       frameX: Array.from({ length: 8 }, (_, index) => index),
       ifx: 0,
       frameY: 0,
       frameTimer: 0,
-      frameInterval: 30,
-      sound: new Audio(
-        "/explosion/public_audio_explosion_explosionCrunch_004.ogg"
-      ),
+      frameInterval: 1000 / 30,
       isVisible: true,
-      playSound: () => {
+      sprite: new Image(),
+      sound: new Audio(
+        "/audio/explosion/public_audio_explosion_explosionCrunch_004.ogg"
+      ),
+      playExplosionSound: () => {
         this.explosion.sound.currentTime = 0;
         this.explosion.sound.play();
       },
@@ -51,8 +51,10 @@ export class Explosion {
   }
 
   show(position = { x: 0, y: 0 }) {
-    this.explosions.push(new Explosion(this.game, position));
-    this.explosion.playSound();
+    let x = position.x - this.explosion.width * 0.5;
+    let y = position.y - this.explosion.height * 0.5;
+    this.explosions.push(new Explosion(this.game, { x, y }));
+    this.explosion.playExplosionSound();
   }
 
   drawAndDebug() {
@@ -96,10 +98,10 @@ export class Explosion {
   }
 
   update(deltaTime: number) {
-    this.explosions.forEach((obj, index) => {
-      obj.render(deltaTime);
+    this.explosions.forEach((exp, index) => {
+      exp.render(deltaTime);
 
-      if (obj.explosion.isVisible === false) {
+      if (exp.explosion.isVisible === false) {
         this.explosions.splice(index, 1);
       }
       // console.log(this.explosions);

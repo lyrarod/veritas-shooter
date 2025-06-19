@@ -15,7 +15,6 @@ export class Enemy {
   frametimer: number;
   frameinterval: number;
   image: HTMLImageElement;
-  impactAudio: HTMLAudioElement;
 
   constructor(game: Game) {
     this.game = game;
@@ -32,7 +31,6 @@ export class Enemy {
     this.health = 3;
     this.image = new Image();
     this.image.src = "/enemy.png";
-    this.impactAudio = new Audio("/EXPLDsgn_Explosion_Impact_14.wav");
   }
 
   hitbox = {
@@ -51,20 +49,18 @@ export class Enemy {
     }
   }
 
-  playImpactAudio() {
-    this.impactAudio.currentTime = 0;
-    this.impactAudio.play();
-  }
-
   takeDamage(index: number) {
     if (this.health < 1 || this.y < 0) return;
     this.health--;
-    this.playImpactAudio();
+    this.game.playImpactAudio();
     this.y -= this.height * 0.05;
 
     if (this.health === 0) {
       this.game.enemies.splice(index, 1);
-      this.game.explosion.show({ x: this.x, y: this.y });
+      this.game.explosion.show({
+        x: this.x + this.width * 0.5,
+        y: this.y + this.height * 0.5,
+      });
     }
     // console.log(this.game.enemies);
 

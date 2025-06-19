@@ -21,13 +21,19 @@ export default function Home() {
           ref={canvas}
           width={500}
           height={600}
-          className="w-full max-w-full bg-white border-b sm:border-b-0 dark:bg-black"
-          // style={{ imageRendering: "pixelated" }}
+          className="w-full max-w-full"
+          style={{
+            // imageRendering: "pixelated",
+            backgroundImage: "url(/bg/bg_3.jpg)",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          }}
         />
 
         <div
           id="screen"
-          className="absolute top-0 left-0 flex items-center justify-center w-full h-full bg-gray-200 dark:bg-gray-950"
+          className="absolute top-0 left-0 flex items-center justify-center w-full h-full bg-white dark:bg-black"
         >
           <div
             id="loading"

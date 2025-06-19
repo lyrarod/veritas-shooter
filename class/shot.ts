@@ -20,8 +20,8 @@ export class Shot {
   frameY: number;
   frameTimer: number;
   frameInterval: number;
-  initFrame: number;
-  lastFrame: number;
+  startFrameX: number;
+  lastFrameX: number;
 
   constructor(
     game: Game,
@@ -39,17 +39,17 @@ export class Shot {
     this.y = position.y;
     this.direction = direction;
     this.speed = 5;
-    this.initFrame = 8;
-    this.lastFrame = 16;
-    this.ifx = this.initFrame;
-    this.frameX = Array.from({ length: this.lastFrame }, (_, i) => i);
-    this.frameY = 0;
+    this.startFrameX = 16;
+    this.lastFrameX = 24;
+    this.ifx = this.startFrameX;
+    this.frameX = Array.from({ length: this.lastFrameX }, (_, i) => i);
+    this.frameY = 1;
     this.frameTimer = 0;
     this.frameInterval = 1000 / 30;
     this.isRemoved = false;
     this.shots = [] as Shot[];
     this.sprite = new Image();
-    this.sprite.src = "/bullet_10B.png";
+    this.sprite.src = "/bullet/bullet_1A.png";
   }
 
   addShot() {
@@ -120,7 +120,7 @@ export class Shot {
       if (shot.frameTimer > shot.frameInterval) {
         shot.ifx < shot.frameX.length - 1
           ? shot.ifx++
-          : (shot.ifx = shot.initFrame);
+          : (shot.ifx = shot.startFrameX);
         shot.frameTimer = 0;
       } else {
         shot.frameTimer += deltaTime;

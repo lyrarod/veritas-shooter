@@ -19,7 +19,8 @@ export class Boss {
     this.game = game;
     this.width = 1260 / 7;
     this.height = 262 / 2;
-    this.x = game.canvas.width * 0.5 - this.width * 0.5;
+    // this.x = game.canvas.width * 0.5 - this.width * 0.5;
+    this.x = Math.random() * (game.canvas.width - this.width);
     this.y = -this.height;
     this.frameX = Array.from({ length: 7 }, (_, i) => i);
     this.ifx = 0;
@@ -27,7 +28,7 @@ export class Boss {
     this.frametimer = 0;
     this.frameinterval = 1000 / 30;
     this.speed = 0;
-    this.health = 10;
+    this.health = 5;
     this.image = new Image();
     this.image.src = "/metroid.png";
   }
@@ -57,11 +58,15 @@ export class Boss {
   takeDamage(index: number) {
     if (this.health < 1 || this.y < 0) return;
     this.health--;
-    // console.log(this.health);
+    this.game.playImpactAudio();
     this.y -= this.height * 0.05;
 
     if (this.health === 0) {
       this.game.bosses.splice(index, 1);
+      this.game.explosion.show({
+        x: this.x + this.width * 0.5,
+        y: this.y + this.height * 0.5,
+      });
     }
   }
 

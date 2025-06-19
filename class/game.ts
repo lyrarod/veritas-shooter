@@ -14,7 +14,7 @@ export class Game {
   enemy: Enemy;
   keyboard: Keyboard;
   assets: (HTMLImageElement | HTMLAudioElement)[];
-  count: number;
+  countAssets: number;
   assetsLoaded: boolean;
   gameObjects: (Hero | Boss | Shot | Enemy | Explosion)[];
   bosses: Boss[];
@@ -28,6 +28,7 @@ export class Game {
   ctx: any;
   explosion: Explosion;
   ambientAudio: HTMLAudioElement;
+  impactAudio: HTMLAudioElement;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -38,11 +39,11 @@ export class Game {
     this.waves = [
       {
         enemy: {
-          qty: 30,
+          qty: 50,
           isComplete: false,
         },
         boss: {
-          qty: 1,
+          qty: 5,
           isComplete: false,
         },
         isComplete: false,
@@ -66,10 +67,10 @@ export class Game {
       this.explosion,
     ];
 
-    this.ambientAudio = new Audio("/dark_world.mp3");
-    this.ambientAudio.volume = 1;
+    this.ambientAudio = new Audio("/audio/dark_world.mp3");
+    this.impactAudio = new Audio("/audio/EXPLDsgn_Explosion_Impact_14.wav");
 
-    this.count = 0;
+    this.countAssets = 0;
     this.assetsLoaded = false;
 
     this.assets = [
@@ -77,21 +78,21 @@ export class Game {
       this.boss.image,
       this.enemy.image,
       this.shot.sprite,
-      this.enemy.impactAudio,
       ...this.explosion.assets,
       this.ambientAudio,
+      this.impactAudio,
     ];
 
     this.assets.map((asset, i) => {
       asset.onload = async () => {
-        this.count++;
+        this.countAssets++;
         // console.log(`Asset ${i} loaded: `, asset);
       };
 
       asset.oncanplay = async () => {
-        this.count++;
+        this.countAssets++;
         // console.log(`Asset ${i} loaded: `, asset);
-        if (this.count === this.assets.length) {
+        if (this.countAssets === this.assets.length) {
           let play = document.getElementById("play");
           let loading = document.getElementById("loading");
           await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -99,6 +100,7 @@ export class Game {
           play?.classList.remove("hidden");
           loading?.classList.add("hidden");
         }
+        // console.log(`Total assets loaded:`, this.countAssets);
       };
 
       asset.onerror = () => {
@@ -137,10 +139,15 @@ export class Game {
     );
   }
 
+  playImpactAudio() {
+    this.impactAudio.currentTime = 0;
+    this.impactAudio.play();
+  }
+
   async playAmbientAudio() {
     await new Promise((resolve) => setTimeout(resolve, 3000));
     this.ambientAudio.currentTime = 0;
-    this.ambientAudio.volume = 0.4;
+    this.ambientAudio.volume = 0.5;
     this.ambientAudio.play().then(() => {});
   }
 

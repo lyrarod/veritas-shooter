@@ -77,7 +77,9 @@ export class Hero {
       down: false,
     };
 
-    this.shotAudio = new Audio("/WHOOSH_AIRY_FLUTTER_01.wav");
+    this.shotAudio = new Audio(
+      "/audio/LASRGun_Particle_Compressor_Fire_01.wav"
+    );
 
     this.assets = [
       this.sprite.image,
@@ -96,6 +98,7 @@ export class Hero {
 
   playShotAudio() {
     this.shotAudio.currentTime = 0;
+    this.shotAudio.volume = 0.3;
     this.shotAudio.play();
   }
 
