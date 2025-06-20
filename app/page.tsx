@@ -23,7 +23,7 @@ export default function Home() {
           height={600}
           className="w-full max-w-full"
           style={{
-            // imageRendering: "pixelated",
+            imageRendering: "pixelated",
             backgroundImage: "url(/bg/bg_3.jpg)",
             backgroundSize: "cover",
             backgroundPosition: "center",

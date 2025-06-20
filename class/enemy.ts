@@ -15,19 +15,25 @@ export class Enemy {
   frametimer: number;
   frameinterval: number;
   image: HTMLImageElement;
+  startFrameX: number;
+  lastFrameX: number;
+  direction: { x: number; y: number };
 
   constructor(game: Game) {
     this.game = game;
     this.width = 512 / 8;
-    this.height = 272 / 4;
+    this.height = 260 / 4;
     this.x = Math.random() * (game.canvas.width - this.width);
     this.y = -this.height;
-    this.frameX = Array.from({ length: 4 }, (_, i) => i);
-    this.ifx = 0;
+    this.startFrameX = 0;
+    this.lastFrameX = 4;
+    this.ifx = this.startFrameX;
+    this.frameX = Array.from({ length: this.lastFrameX }, (_, i) => i);
     this.frameY = 0;
     this.frametimer = 0;
     this.frameinterval = 1000 / 30;
-    this.speed = 0.3 + Math.random() * 0.3;
+    this.speed = 0.25 + Math.random() * 0.75;
+    this.direction = { x: 0, y: 0 };
     this.health = 3;
     this.image = new Image();
     this.image.src = "/enemy.png";
@@ -55,7 +61,20 @@ export class Enemy {
     this.game.playImpactAudio();
     this.y -= this.height * 0.05;
 
-    if (this.health === 0) {
+    const hitChangeSprite = (fy: number = 0) => {
+      this.frameY = fy;
+      this.startFrameX = 0;
+      this.lastFrameX = 8;
+      this.ifx = this.startFrameX;
+      this.frameX = Array.from({ length: this.lastFrameX }, (_, i) => i);
+    };
+
+    if (this.health === 2) {
+      hitChangeSprite(2);
+    } else if (this.health === 1) {
+      hitChangeSprite(3);
+      this.direction.x = Math.random() < 0.5 ? -0.1 : 0.1;
+    } else {
       this.game.enemies.splice(index, 1);
       this.game.explosion.show({
         x: this.x + this.width * 0.5,
@@ -116,9 +135,12 @@ export class Enemy {
       enemy.draw();
       enemy.drawHitbox();
       enemy.y += enemy.speed;
+      enemy.x += enemy.speed * enemy.direction.x;
 
       if (enemy.frametimer > enemy.frameinterval) {
-        enemy.ifx < enemy.frameX.length - 1 ? enemy.ifx++ : (enemy.ifx = 0);
+        enemy.ifx < enemy.frameX.length - 1
+          ? enemy.ifx++
+          : (enemy.ifx = enemy.startFrameX);
         enemy.frametimer = 0;
       } else {
         enemy.frametimer += deltaTime;
